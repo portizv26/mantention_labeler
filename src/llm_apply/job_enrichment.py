@@ -10,13 +10,14 @@ from src.schemas import (
     EvaluationCriticity
     )
 
-from utils import (
+from src.utils import (
     call_llm, 
     call_llm_structured,
     CLIENT,
     MODEL,
     )
-import prompts as P
+import src.prompts as P
+
 from concurrent.futures import ThreadPoolExecutor
 
 def _evaluate_criticity(job_type:str, critical_component:bool, summary:str) -> CriticityEvaluation:

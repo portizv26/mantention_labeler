@@ -1,3 +1,12 @@
 /.env
 /.venv
 /logs
+/jsondata
+/data/base
+/data/*
+!/data/to_process/
+/data/to_process/*
+!/data/to_process/maintenance_data_2025-02.xlsx
+!/data/processed/
+/data/processed/*
+!/data/processed/maintenance_records_2025-02.xlsx

@@ -375,6 +375,8 @@ class MaintenanceRecord(NormalizedModel):
     summary: str
     jobs: List[Job]
 
+from datetime import datetime
+
 class FinalMaintenanceRecord(NormalizedModel):
     unit_id : str
     start_time: str

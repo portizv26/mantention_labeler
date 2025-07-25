@@ -66,7 +66,7 @@ def read_data(file_path: str) -> pd.DataFrame:
     return df
 
 
-def process_data_sctructure(df: pd.DataFrame, column_name_dictionary: dict, years: int, week: int) -> pd.DataFrame:
+def process_data_structure(df: pd.DataFrame, column_name_dictionary: dict, years: str, week: str) -> pd.DataFrame:
     """
     Process the data structure of the DataFrame.
     In order to prepare the DataFrame for further analysis, this function performs the following steps:
@@ -87,8 +87,8 @@ def process_data_sctructure(df: pd.DataFrame, column_name_dictionary: dict, year
     Args:
         df (pd.DataFrame): The DataFrame to process.
         column_name_dictionary (dict): A dictionary mapping old column names to new column names.
-        years (int, optional): Year to filter by.
-        week (int, optional): Week number to filter by.
+        years (str, optional): Year to filter by.
+        week (str, optional): Week number to filter by.
         
     Returns:
         pd.DataFrame: The processed DataFrame with renamed columns.
@@ -118,7 +118,7 @@ def process_data_sctructure(df: pd.DataFrame, column_name_dictionary: dict, year
     # Step 10: Filter by year and week if provided
     if years is not None and week is not None:
         df.loc[:, 'WeekYear'] = df['start_time'].dt.strftime('%Y-%U')
-        df = df[df['WeekYear'] == f"{years}-{week:02d}"]  # Filter by year and week
+        df = df[df['WeekYear'] == f"{years}-{week}"]  # Filter by year and week
         df.drop(columns=['WeekYear'], inplace=True)  # Remove the temporary 'WeekYear' column
 
     # Step 11: Select specific columns to keep in the DataFrame
@@ -1073,7 +1073,7 @@ def filter_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def read_and_process_data(file_path: str, year: int, week: int) -> pd.DataFrame:
+def read_and_process_data(file_path: str, year: str, week: str) -> pd.DataFrame:
     """
     Read and process the maintenance data from the specified file path.
     Parameters:
@@ -1085,7 +1085,7 @@ def read_and_process_data(file_path: str, year: int, week: int) -> pd.DataFrame:
     """
     
     df = read_data(file_path)
-    df = process_data_sctructure(df, d_cols, year, week)
+    df = process_data_structure(df, d_cols, year, week)
     df = clean_comments(df)
     df = filter_data(df)
     

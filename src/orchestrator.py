@@ -20,9 +20,9 @@ def _assign_final_records(records, df):
         row = df.iloc[idx]
         
         final_record = FinalMaintenanceRecord(
-            unit_id=row["unit_id"],
-            start_time=row["start_time"],
-            end_time=row["end_time"],
+            unit_id=row["UnitId"],
+            start_time=str(row["start_time"]),
+            end_time=str(row["end_time"]),
             
             detention_type=record.detention_type,
             is_scheduled=record.is_scheduled,
@@ -63,7 +63,7 @@ def excecute_labeler(year: str, week: str):
     excel_path_in = os.path.join(
         "data",
         "to_process",
-        f"maintenance_records_{year}-{week}.xlsx"
+        f"maintenance_data_{year}-{week}.xlsx"
     )
     df = read_and_process_data(excel_path_in, year, week)
 

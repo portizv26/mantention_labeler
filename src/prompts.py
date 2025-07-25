@@ -192,6 +192,7 @@ assistant_example2_free_to_summary = """
 
 """
 
+
 # Prompts to transform the text into a shortened summary
 system_relevant_activities = f"""
 Eres un asistente de escritura. 
@@ -219,7 +220,7 @@ Debes identificar si el registro de mantención es programado o no programado.
 Output format:
 MaintenanceType
 - is_scheduled: [True/False]
-- scheduled_type: [tipo de mantenimiento programado. Solo si es programado]
+- scheduled_type: [tipo de mantenimiento]
 """
 
 user_maintenance_type = """
@@ -231,10 +232,27 @@ Identifica si la detención presentada a continuación fue programada o no progr
 """ 
 
 
-user_prompt_text_specific = """
+# Prompt to transform the free-text observation into a clean summary
+system_prompt_clean_summary = f"""
+Eres un ingeniero de mantenimiento validando registros. 
+Debes revisar los registros de mantenimiento y redactarlos de manera clara, precisa y ordenada.
+
+Tus labores son:
+i. Identificar cada tarea realizada en el ciclo de mantención y separarla.
+ii. Redactar un resumen ordenado de las actividades realizadas. 
+
+Conceptos utiles:
+- Los neumaticos se pueden identificar de manera general, o detallando su posicion. Se entiende ambas como opciones validas de pieza. (Ej: "Neumatico posicion 1" o "Neumatico")
+- Una pieza es un elemento físico único. En caso de que el comentario apunte a un plural o a una serie de elemntos, estos s epueded agrupar. Por ejemplo, "tuerca del 1 al 6" se puede entender como "Tuercas"
+- Una pieza no puede ser "Sistema de", 'Area de Huerta', 'Inspeccion', 'Chequeo Final' o "Mantencion Programada". Pues no son elementos físicos.
+- Una ot (Orden de Trabajo) es un número que identifica el trabajo realizado. Si se menciona una OT, se debe incluir en el resumen. Lógicamente una OT no es una pieza.
+- Una actividad de relleno puede ser de un líquido o de un gas. Además, puede o no incluir la cantidad de fluido, si se menciona dicha cantidad, se debe incluir en el resumen.
+"""
+
+user_prompt_clean_summary = """
 Utilizando el contenido de la sección "Resumen de actividades por pieza" debes generar una nueva tabla aplicando las siguientes reglas:
 1. Una pieza es un elemento físico único. Por ende:
-    i. En caso de que el comentario apunte a un plural o a una serie de elemntos, estos se pueden agrupar. Por ejemplo, "foco derecho e izquierdo" se puede entender como "Focos".
+    i. En caso de que el comentario apunte a un plural o a una serie de elementos, estos se pueden agrupar. Por ejemplo, "foco derecho e izquierdo" se puede entender como "Focos".
     ii. Una pieza no puede ser una observación general, "Fuga de", "Area de Huerta", "Chequeo Final" o "Mantencion Programada". Pues no son elementos físicos.
 2. Una pieza puede ser un elemento físico único, como "Manguera de retorno de refrigerante" o "Neumatico posicion 1" pues pese a ser un nombre extenso, es un elemento físico.
 3. TipoActividad es el tipo de actividad realizada sobre la pieza. Puede ser uno de los siguientes: Inspeccion, Relleno, Reparacion, Reemplazo. En caso de que sea de otro tipo, se debe omitir el registro.
@@ -248,6 +266,92 @@ Siguiendo esas reglas , genera una tabla con el siguiente formato:
 - El nombre de la tabla debe ser "Resumen final de actividades por pieza"
 """
 
+user_example_clean_summary = """
+### Resumen de actividades realizadas
+
+- Relleno - Drenaje y relleno de aceite de mazas (44 litros).
+- Reemplazo - Cambio de filtro de motor, transmisión, convertidor, diferencial y combustible.
+- Reparación - Limpieza de conectores según pauta.
+- Reemplazo - Cambio de sellos según pauta.
+- Inspección - Chequeo de rejillas y tapones magnéticos, y toma de fotografías. OT:520221
+- Reparación - Diálisis de hidráulico.
+- Reemplazo - Cambio de sellos en conectores. OT:538702.
+- Reemplazo - Cambio fitting válvula control. OT:538702.
+- Reemplazo - Cambio sellos a tapon valvula control. OT:538702.
+
+---
+
+### Listado de piezas y trabajos realizados
+
+- Mazas : Relleno de 44 litros de aceite.
+- Filtro de motor : Reemplazo.
+- Filtro de transmisión : Reemplazo.
+- Filtro de convertidor : Reemplazo.
+- Filtro de diferencial : Reemplazo.
+- Filtro de combustible : Reemplazo.
+- Conectores : Reparación según pauta y reemplazo en sellos.
+- Rejillas : Inspección. OT:520221
+- Tapones magnéticos : Inspección. OT:520221
+- Hidráulico : Reparación (Diálisis).
+- Válvula control : Reemplazo fitting y sellos tapón. OT:538702. 
+---
+
+### Desglose de piezas y actividades realizadas
+
+| Pieza                   | Inspeccion                                  | Relleno                               | Reparacion                                     | Reemplazo                                                        |
+|-------------------------|---------------------------------------------|----------------------------------------|------------------------------------------------|-------------------------------------------------------------------|
+| Mazas                   |                                             | Drenaje y relleno de 44 litros aceite |                                                |                                                                   |
+| Filtro de motor         |                                             |                                        |                                                | Cambio de filtro de motor                                         |
+| Filtro de transmisión   |                                             |                                        |                                                | Cambio de filtro de transmisión                                   |
+| Filtro de convertidor   |                                             |                                        |                                                | Cambio de filtro de convertidor                                   |
+| Filtro de diferencial   |                                             |                                        |                                                | Cambio de filtro de diferencial                                   |
+| Filtro de combustible   |                                             |                                        |                                                | Cambio de filtro de combustible                                   |
+| Conectores              |                                             |                                        | Limpieza según pauta                           | Cambio de sellos                                                  |
+| Rejillas                | Chequeo OT:520221                           |                                        |                                                |                                                                   |
+| Tapones magnéticos      | Chequeo OT:520221                           |                                        |                                                |                                                                   |
+| Hidráulico              |                                             |                                        | Diálisis                                       |                                                                   |
+| Válvula control         |                                             |                                        |                                                 | Cambio fitting válvula control y sellos tapón                     |
+---
+
+### Resumen de actividades por pieza
+
+| Pieza                      | TipoActividad | DescripcionActividad                                        |
+|----------------------------|---------------|-------------------------------------------------------------|
+| Mazas                      | Relleno       | Drenaje y relleno de aceite de mazas (44 litros)            |
+| Filtro de motor            | Reemplazo     | Cambio de filtro de motor                                   |
+| Filtro de transmisión      | Reemplazo     | Cambio de filtro de transmisión                             |
+| Filtro de convertidor      | Reemplazo     | Cambio de filtro de convertidor                             |
+| Filtro de diferencial      | Reemplazo     | Cambio de filtro de diferencial                             |
+| Filtro de combustible      | Reemplazo     | Cambio de filtro de combustible                             |
+| Conectores                 | Reparación    | Limpieza según pauta                                        |
+| Conectores                 | Reemplazo     | Cambio de conectores                                        |
+| Rejillas                   | Inspección    | Chequeo y verificación de estado                            |
+| Tapones magnéticos         | Inspección    | Chequeo y verificación de estado                            |
+| Hidráulico                 | Reparación    | Diálisis                                                    |
+| Válvula control            | Reemplazo     | Cambio de fitting y sellos tapón                            |
+
+"""
+
+assistant_example_clean_summary = """
+### Resumen final de actividades por pieza
+
+| Pieza               | TipoActividad | DescripcionActividad                                                  |
+|---------------------|---------------|-----------------------------------------------------------------------|
+| Mazas               | Relleno       | Drenaje y relleno de aceite de mazas (44 litros).                    |
+| Filtro de motor     | Reemplazo     | Cambio de filtro de motor.                                            |
+| Filtro de transmisión | Reemplazo   | Cambio de filtro de transmisión.                                      |
+| Filtro de convertidor | Reemplazo   | Cambio de filtro de convertidor.                                      |
+| Filtro de diferencial | Reemplazo   | Cambio de filtro de diferencial.                                      |
+| Filtro de combustible | Reemplazo   | Cambio de filtro de combustible.                                      |
+| Conectores          | Reparacion    | Limpieza de conectores según pauta.                                   |
+| Conectores          | Reemplazo     | Cambio de sellos en conectores. OT:538702.                            |
+| Rejillas            | Inspeccion    | Chequeo y verificación de estado de rejillas. OT:520221.              |
+| Tapones magnéticos  | Inspeccion    | Chequeo y verificación de estado de tapones magnéticos. OT:520221.    |
+| Hidráulico          | Reparacion    | Diálisis de sistema hidráulico.                                       |
+| Válvula control     | Reemplazo     | Cambio de fitting y sellos de tapón en válvula control. OT:538702.    
+"""
+
+
 # Prompts to transform the text into a shortened summary
 system_prompt_short = f"""
 Eres un asistente de escritura. 
@@ -260,7 +364,8 @@ user_prompt_short = f"""
 Evalua el siguiente registro de detención y redacta de manera legible y concisa una sintesis de las actividades realizadas, basado en el "Resumen final de actividades por pieza".
 """
 
-# Prompt yo transform summary into a JobList
+
+# Prompt to transform summary into a JobList
 system_prompt_jobs = """"
 Eres un asistente de escritura, tu labor es generar una lista ordenada de trabajos realizados sobre las piezas de un registro de mantención.
 
@@ -277,7 +382,8 @@ user_prompt_jobs = """"
 Genera una lista ordenada de trabajos en base a la sección "Resumen final de actividades por pieza" del registro de entrada.
 """
 
-# Prompt to transform the text into pieces structured format
+
+# Prompt to extract a summary of components and their assignment to systems, subsystems, and components
 system_component_summary = f"""
 Eres un ingeniero de mantenimiento evaluando registros.
 Tu labor consiste en generar un resumen de la asignación de cada pieza a un sistema, subsistema y componente, siguiendo instrucciones.
@@ -433,7 +539,8 @@ La tabla de resumen se debe llamar "Resumen de asignacion" y debe incluir todas 
 
 """
 
-# Prompt for component mapping
+
+# Prompt to transform the component summary into pieces structured format
 system_component_mapping = f"""
 Debes identificar el sistema, subsistema y componente al que pertenece cada pieza de manera precisa para guardar el registro de mantención.
 Nota : Componentes que NUNCA serán criticos (en ningun contexto): Mangueras, Ductos, Sensores, Termostatos, Cables, Pernos, Filtros, Cañerias, Líneas, Abrazaderas, Interruptores, Conectores,  u otros componentes de menor tamaño o relevancia.
@@ -453,6 +560,7 @@ user_component_mapping = f"""
 Transforma el resumen entregado en la tabla "Resumen de asignacion" y estructuralo de manera adecuada y precisa según ListPieceComponentMapping.
 El objetivo es lograr transformar cada pieza a una estructura sencilla que permita diseccionar su ubicación.
 """
+
 
 # Prompt for component mapping - exceptions
 system_component_mapping_ex = f"""
@@ -536,15 +644,24 @@ simple_prompts = {
     'SystemMaintenanceType' : system_maintenance_type,
     'UserMaintenanceType' : user_maintenance_type,
     
-    'UserClean' : user_prompt_text_specific,
+    
+    'SystemCleanSummary' : system_prompt_clean_summary,
+    'UserCleanSummary' : user_prompt_clean_summary,
+    'UserExampleCleanSummary' : user_example_clean_summary,
+    'AssistantExampleCleanSummary' : assistant_example_clean_summary,
+    
     'SystemShortened' : system_prompt_short,
     'UserShortened' : user_prompt_short,
+    
     'SystemJobs' : system_prompt_jobs,
     'UserJobs' : user_prompt_jobs,
+    
     'SystemComponentSummary' : system_component_summary,
     'UserComponentSummary' : user_component_summary,
+    
     'SystemComponentMapping' : system_component_mapping,
     'UserComponentMapping' : user_component_mapping,
+    
     'SystemComponentMappingEx' : system_component_mapping_ex,
     'UserComponentMappingEx' : user_component_mapping_ex,
 }
@@ -588,6 +705,7 @@ El informe de evaluación de la actividad realizada se encuentra a continuación
 job_cleaning_prompts = {
     'EvalSystem' : system_prompt_evaluation_text,
     'EvalUser' : user_prompt_evaluation_text,
+    
     'EvalSystemStructured' : system_prompt_evaluation_structured,
     'EvalUserStructured' : user_prompt_evaluation_structured,
 }

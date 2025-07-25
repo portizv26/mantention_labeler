@@ -191,7 +191,7 @@ def timeit(json_fname: str):
             if row_idx is not None:
                 print(f"{fn.__name__!r} row {row_idx} ran in {elapsed}s")
             else:
-                print(f"{fn.__namxe__!r} ran in {elapsed}s")
+                print(f"{fn.__name__!r} ran in {elapsed}s")
 
             return result
         return wrapper
